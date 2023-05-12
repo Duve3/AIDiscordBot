@@ -1,11 +1,14 @@
 import datetime
-import enum
+import os
 
 from colors import ColorsClass
 import logging
 
 date = datetime.date.today()
 date = date.strftime("%Y-%d-%m")
+if not os.path.exists("./logs/"):
+    os.mkdir("./logs/")
+
 logging.basicConfig(filename=f'./logs/{date}.log', filemode='a', format="%(asctime)s %(name)-30s %(levelname)-8s %(message)s", datefmt='%Y-%d-%m %H:%M:%S', level="DEBUG")
 color = ColorsClass()
 levelRange = {
