@@ -17,20 +17,27 @@ class AICog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot  # adding a bot attribute for easier access
         with open("./bard.secret", "r") as sf:
-            self.chatBot = Chatbot(f"{sf.read()}")
+            result = sf.read()
+            if result is None or result == "":
+                log("discord.AI_cog.__init__", "FAILED TO LOAD AI INFORMATION, EXITING...", level.ERROR)
+                return
+            try:
+                self.chatBot = Chatbot(f"{result}")
+            except AttributeError:
+                log("discord.AI_cog.__init__", "FAILED TO LOAD AI INFORMATION, EXITING...\n(THIS IS A MAJOR ERROR, REPORT ON THE GITHUB PAGE NOW)", level.ERROR)
         self.db = pickledb.load("./discord.db", True)
 
 
-    @commands.command(name="send")
+    @commands.hybrid_command(name="send", with_app_command=True)
     async def send_Command(self, ctx: commands.Context, *, args):
-
         author = str(ctx.author)
-        if not self.db.exists(author):
+        if not self.db.exists(f"{author}.PRETENSE"):
             self.db.set(f"{author}.PRETENSE", "")
         pretense = self.db.get(f"{author}.PRETENSE")
 
         response = self.chatBot.ask(f"{pretense} {args}")
-        msg = f"{ctx.author.mention}'s response to \"{args}\" with pretense: \"{pretense}\" is:\n{response['content']}"
+        normal_pretense = str.strip(pretense, "\n")
+        msg = f"{ctx.author.mention}'s response to \"{args}\" with pretense: \"{normal_pretense}\" is:\n{response['content']}"
         if len(msg) > 2000:
             msgs = [msg[i:i+1995] for i in range(0, len(msg), 1995)]
             for msg in msgs:
@@ -41,11 +48,12 @@ class AICog(commands.Cog):
 
     @commands.command(name="pretense")
     async def pretense_Command(self, ctx: commands.Context, *, args):
+        log("discord.client.AI_cog.pretense_Command", f"Running pretense command with {args}", level.DEBUG)
         pretense = args
 
         author = str(ctx.author)
         if not self.db.exists(f"{author}.PRETENSE"):
-            self.db.set(f"{author}.PRETENSE", "")
+            self.db.set(f"{author}.PRETENSE", f"{pretense}\n")
         self.db.set(f"{author}.PRETENSE", f"{pretense}\n")
 
         await ctx.send(f"{ctx.author.mention} I have sent your pretense to \"{pretense}\". This pretense will only work for you.")
