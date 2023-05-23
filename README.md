@@ -1,8 +1,16 @@
 # AIDiscordBot
 An AI (bard in specific) directly connected to a discord bot.
 
-## how to use:
-After copying the github locally, you will need to create two extra files, a token.secret file and a bard.secret file.
+## Requirements:
+In order to use this project you will need 2 libraries, the google bard API and discord.py, you can install these with the following pip commands:
+```commandline
+pip install --upgrade discord
+pip install --upgrade GoogleBard
+```
+You will also need access to [google's bard AI](https://bard.google.com/) as this requires it.
+
+## How To Use:
+After copying the repo locally (and installing the dependencies), you will need to create two extra files, a token.secret file and a bard.secret file.
 These files will contain all the secret information for your discord bot and bard api, so keep it secret.
 
 token.secret should have a discord bot token (get one [here](https://discord.com/developers/applications))
