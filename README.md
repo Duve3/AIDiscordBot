@@ -2,10 +2,11 @@
 An AI (bard in specific) directly connected to a discord bot.
 
 ## Requirements:
-In order to use this project you will need 2 libraries, the google bard API and discord.py, you can install these with the following pip commands:
+In order to use this project you will need 3 libraries, the Google bard API, the discord.py library, and pickledb (the local database), you can install these with the following pip commands:
 ```commandline
 pip install --upgrade discord
 pip install --upgrade GoogleBard
+pip install --upgrade pickledb
 ```
 You will also need access to [google's bard AI](https://bard.google.com/) as this requires it.
 

@@ -1,5 +1,3 @@
-from discord import app_commands
-import discord
 import pickledb
 from discord.ext import commands
 import sys
@@ -20,16 +18,19 @@ class AICog(commands.Cog):
             result = sf.read()
             if result is None or result == "":
                 log("discord.AI_cog.__init__", "FAILED TO LOAD AI INFORMATION, EXITING...", level.ERROR)
-                return
+                exit(-1)
             try:
                 self.chatBot = Chatbot(f"{result}")
-            except AttributeError:
+            except AttributeError as e:
                 log("discord.AI_cog.__init__", "FAILED TO LOAD AI INFORMATION, EXITING...\n(THIS IS A MAJOR ERROR, REPORT ON THE GITHUB PAGE NOW)", level.ERROR)
+                log("discord.AI_cog.__init__", f"ERROR EXTRACTED: {repr(e)}", level.INFO)
+                exit(-1)  # return doesn't work in this case as __init__ is supposed to return nothing anyway.
         self.db = pickledb.load("./discord.db", True)
 
 
     @commands.hybrid_command(name="send", with_app_command=True)
     async def send_Command(self, ctx: commands.Context, *, args):
+        await ctx.defer()  # this process can take longer than the 3 seconds given, especially with lower end servers/systems
         author = str(ctx.author)
         if not self.db.exists(f"{author}.PRETENSE"):
             self.db.set(f"{author}.PRETENSE", "")
@@ -37,17 +38,20 @@ class AICog(commands.Cog):
 
         response = self.chatBot.ask(f"{pretense} {args}")
         normal_pretense = str.strip(pretense, "\n")
-        msg = f"{ctx.author.mention}'s response to \"{args}\" with pretense: \"{normal_pretense}\" is:\n{response['content']}"
+        p_text = f" with pretense: \"{normal_pretense}\"" if normal_pretense != "" else ""
+        msg = f"Response to \"{args}\"{p_text} is:\n{response['content']}"
         if len(msg) > 2000:
             msgs = [msg[i:i+1995] for i in range(0, len(msg), 1995)]
             for msg in msgs:
                 await ctx.send(msg)
             return
-        await ctx.send(msg)
+
+        await ctx.reply(msg)
 
 
-    @commands.command(name="pretense")
+    @commands.hybrid_command(name="pretense", with_app_command=True)
     async def pretense_Command(self, ctx: commands.Context, *, args):
+        await ctx.defer()  # this process can take longer than the 3 seconds given, especially with lower end servers/systems
         log("discord.client.AI_cog.pretense_Command", f"Running pretense command with {args}", level.DEBUG)
         pretense = args
 
@@ -56,7 +60,7 @@ class AICog(commands.Cog):
             self.db.set(f"{author}.PRETENSE", f"{pretense}\n")
         self.db.set(f"{author}.PRETENSE", f"{pretense}\n")
 
-        await ctx.send(f"{ctx.author.mention} I have sent your pretense to \"{pretense}\". This pretense will only work for you.")
+        await ctx.reply(f"I have sent your pretense to \"{pretense}\". This pretense will only work for you.")
 
     @commands.command(name="check_pretense")
     async def pretense_check_Command(self, ctx: commands.Context):
@@ -64,12 +68,11 @@ class AICog(commands.Cog):
         if not self.db.exists(f"{author}.PRETENSE"):
             self.db.set(f"{author}.PRETENSE", "")
 
-        await ctx.send(f"{ctx.author.mention} Your pretense is currently: {self.db.get(f'{author}.PRETENSE')}")
+        await ctx.reply(f"Your pretense is currently: {self.db.get(f'{author}.PRETENSE')}")
 
     # doing something when the cog gets loaded
     async def cog_load(self):
         log(f"discord.Client.Cogs.{self.__class__.__name__}", f"{self.__class__.__name__} loaded!", level.DEBUG)
-
 
     # doing something when the cog gets unloaded
     async def cog_unload(self):

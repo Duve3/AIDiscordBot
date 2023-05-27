@@ -3,7 +3,6 @@ from discord.ext import commands
 from colors import ColorsClass
 from log import log, level
 import os
-import json
 
 color = ColorsClass()
 

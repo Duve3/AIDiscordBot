@@ -154,6 +154,7 @@ cython_debug/
 
 # avoid secret files
 *.secret
+requirements.txt
 
 
 
